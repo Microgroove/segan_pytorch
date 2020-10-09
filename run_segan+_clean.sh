@@ -4,11 +4,11 @@ CKPT_PATH="ckpt_segan+"
 
 # please specify the path to your G model checkpoint
 # as in weights_G-EOE_<iter>.ckpt
-G_PRETRAINED_CKPT="segan+_generator.ckpt"
+G_PRETRAINED_CKPT="Generator.ckpt"
 
 # please specify the path to your folder containing
 # noisy test files, each wav in there will be processed
-TEST_FILES_PATH="data_veu4/expanded_segan1_additive/noisy_testset/"
+TEST_FILES_PATH="Test"
 
 # please specify the output folder where cleaned files
 # will be saved
