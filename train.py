@@ -52,6 +52,7 @@ def main(opts):
         dset = SEDataset(opts.clean_trainset, 
                          opts.noisy_trainset, 
                          opts.preemph,
+                         opts.wav_khz,
                          do_cache=True,
                          cache_dir=opts.cache_dir,
                          split='train',
@@ -76,6 +77,7 @@ def main(opts):
             va_dset = SEDataset(opts.clean_valset, 
                                 opts.noisy_valset, 
                                 opts.preemph,
+                                opts.wav_khz,
                                 do_cache=True,
                                 cache_dir=opts.cache_dir,
                                 split='valid',
@@ -117,6 +119,7 @@ if __name__ == '__main__':
                         default=None)#'data/clean_valset')
     parser.add_argument('--noisy_valset', type=str,
                         default=None)#'data/noisy_valset')
+    parser.add_argument('--wav-khz', type=int, default=16000)                        
     parser.add_argument('--h5_data_root', type=str, default=None,
                         help='H5 data root dir (Def: None). The '
                              'files will be found by split name '

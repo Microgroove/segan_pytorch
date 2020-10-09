@@ -59,7 +59,7 @@ def slice_signal(signal, window_sizes, stride=0.5):
 def slice_index_helper(args):
     return slice_signal_index(*args)
 
-def slice_signal_index(path, window_size, stride):
+def slice_signal_index(path, window_size, stride, wav_khz):
     """ Slice input signal into indexes (beg, end) each
 
         # Arguments
@@ -69,7 +69,7 @@ def slice_signal_index(path, window_size, stride):
         # Returns
             A list of tuples (beg, end) sample indexes
     """
-    signal, rate = librosa.load(path, 16000)
+    signal, rate = librosa.load(path, wav_khz)
     assert stride <= 1, stride
     assert stride > 0, stride
     assert signal.ndim == 1, signal.ndim
@@ -127,7 +127,7 @@ def de_emphasize(y, coef=0.95):
 
 class SEDataset(Dataset):
     """ Speech enhancement dataset """
-    def __init__(self, clean_dir, noisy_dir, preemph, cache_dir='.', 
+    def __init__(self, clean_dir, noisy_dir, preemph, wav_khz, cache_dir='.', 
                  split='train', slice_size=2**14,
                  stride = 0.5, max_samples=None, do_cache=False, verbose=False,
                  slice_workers=2, preemph_norm=False,
@@ -153,6 +153,7 @@ class SEDataset(Dataset):
         self.split = split
         self.verbose = verbose
         self.preemph = preemph
+        self.wav_khz = wav_khz
         # order is preemph + norm (rather than norm + preemph)
         self.preemph_norm = preemph_norm
         # random scaling list, selected per utterance
@@ -259,10 +260,10 @@ class SEDataset(Dataset):
                   ' {} and stride {}... >'.format(self.slice_size, self.stride))
         beg_t = timeit.default_timer()
         pool = mp.Pool(self.slice_workers)
-        clean_args = [(self.clean_names[i], self.slice_size, self.stride) for \
+        clean_args = [(self.clean_names[i], self.slice_size, self.stride, self.wav_khz) for \
                       i in range(len(self.clean_names))]
         c_slices = pool.map(slice_index_helper, clean_args)
-        noisy_args = [(self.noisy_names[i], self.slice_size, self.stride) for \
+        noisy_args = [(self.noisy_names[i], self.slice_size, self.stride, self.wav_khz) for \
                       i in range(len(self.noisy_names))]
         n_slices = pool.map(slice_index_helper, noisy_args)
         if len(n_slices) != len(c_slices):
@@ -405,7 +406,7 @@ class RandomChunkSEDataset(Dataset):
 
     def read_wav_file(self, wavfilename):
         #rate, wav = wavfile.read(wavfilename)
-        wav, rate = librosa.load(wavfilename, 16000)
+        wav, rate = librosa.load(wavfilename, self.wav_khz)
 
         #wav = abs_short_normalize_wave_minmax(wav)
         wav = pre_emphasize(wav, self.preemph)
